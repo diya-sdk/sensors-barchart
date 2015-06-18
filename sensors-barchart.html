@@ -1,0 +1,275 @@
+<link rel="import" href="../polymer/polymer.html">
+<script type="text/javascript" src="../d3/d3.min.js"></script>
+
+<polymer-element name="sensors-barchart" attributes="width height selector period sensors">
+	<template>
+		<style>
+			:host {
+				display: flex;
+				flex-direction: horizontal;
+				justify-content: center;
+				width: 100vw;
+			}
+			:host .barChart {
+       			 stroke: #AAAAAA;
+       			 stroke-width: 3px;
+      		}
+      :host .text {
+				fill: #222222;
+				stroke: none;
+				font-size:20px;
+				font-weight: bold;
+			}
+			:host .barchart .axis {
+				fill: #888;
+				font-size:18px;
+				font-weight: bold;
+			}
+      text {
+				font-size: 18px;
+				font-weight: bold;
+			}
+		</style>
+
+		<span class="bar-chart">
+		 <svg id="chart" width="{{width}}" height="{{height}}"></svg>
+		</span>
+
+	</template>
+
+
+
+	<script>
+
+		function setBarGradient(svg){
+			var greenGradient = svg.append("svg:defs")
+				.append("svg:linearGradient")
+				.attr("id", "greenGradient")
+				.attr("x1", "0%")
+				.attr("y1", "0%")
+				.attr("x2", "100%")
+				.attr("y2", "0%")
+				.attr("spreadMethod", "pad");
+
+				// Define the gradient colors
+			greenGradient.append("svg:stop")
+				.attr("offset", "0%")
+				.attr("stop-color", "#88aa00")
+				.attr("stop-opacity", 1);
+
+			greenGradient.append("svg:stop")
+				.attr("offset", "100%")
+				.attr("stop-color", "#669900")
+				.attr("stop-opacity", 1);
+
+			var redGradient = svg.append("svg:defs")
+				.append("svg:linearGradient")
+				.attr("id", "redGradient")
+				.attr("x1", "0%")
+				.attr("y1", "0%")
+				.attr("x2", "100%")
+				.attr("y2", "0%")
+				.attr("spreadMethod", "pad");
+
+				// Define the gradient colors
+			redGradient.append("svg:stop")
+				.attr("offset", "0%")
+				.attr("stop-color", "#ff7f2a")
+				.attr("stop-opacity", 1);
+
+			redGradient.append("svg:stop")
+				.attr("offset", "100%")
+				.attr("stop-color", "#bb5b18")
+				.attr("stop-opacity", 1);
+		}
+
+		/**
+		* @param
+		* @param width      of chart
+		* @param height     of chart
+		* @param qualityThreshold   define threshold on quality for color switching
+		*/
+		function barChart(element, width, height, qualityThreshold) {
+			var data = [];
+			var that = {};
+			var margin = {
+				top: 10,
+				right: 20,
+				bottom: 40,
+				left: 20
+			};
+			var h = height - margin.top - margin.bottom,
+				w = width - margin.left - margin.right,
+				x, y, yArray={};
+
+			that.qualityThreshold = qualityThreshold || 0.5;
+
+			var svg = d3.select(element)
+				.append('g')
+				.attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
+
+			setBarGradient(svg);
+
+			/* group all bars */
+			svg.append("g").attr("class", "allBars");
+
+			// add axis
+			svg.append("g")
+				.attr("class", "x axis")
+				.attr("transform", "translate(0," + h + ")");
+
+			svg.append("g")
+				.attr("class", "y axis");
+
+			that.render = function(model) {
+				// console.log("render: "+JSON.stringify(model));
+
+				if (!model  || model == {} ) return;
+
+				/** convert model to data */
+				var data = [];
+				for (var n in model) {
+					if(n!='time') {
+						data.push({
+							name: model[n].label,
+							unit: model[n].unit,
+							quality: model[n].qualityIndex[model[n].data.length-1],
+							values: model[n].data[model[n].data.length-1]});
+					}
+				}
+				//~ for(var o in options){
+					//~ updateChart[o]=options[o];
+				//~ }
+				// console.log("UC: "+JSON.stringify(data));
+
+				x = d3.scale.ordinal().rangeRoundBands([0, w], .05);
+				x.domain(data.map(function(d) {
+					return d.name;
+				}));
+				y = d3.scale.linear().range([h, 0]);
+				y.domain([0, d3.max(data, function(d) {
+					return d.values || 1;
+				})]);
+
+				/** extract scale for each data */
+				for(var i in model) {
+					if(i != 'time') {
+						yArray[model[i].label]=d3.scale.linear().range([h, 0])
+								.domain(model[i].range);
+					}
+				}
+
+				xAxis = d3.svg.axis()
+					.scale(x)
+					.orient("bottom");
+
+				// No y axis to display
+				this.updateBars(data);
+				this.updateAxis();
+			};
+
+			/** update Bars */
+			that.updateBars = function(data) {
+				//~ console.log("data :"+JSON.stringify(data));
+				var bars = svg.select('.allBars').selectAll('.barChart').data(data);
+
+				bars.exit().transition()
+					.duration(500)
+					.attr("height", 0)
+					.remove();
+				var gBar = bars.enter().append("g")
+					.attr('class', 'barChart');
+				gBar.append('rect');
+				gBar.append('text')
+					.attr('class','text')
+					.attr("y", -20) /* offset position and dim of text area */
+					.attr("dy", ".35em");
+				gBar = svg.selectAll('.barChart');
+				gBar.select('rect')
+					.transition()
+					.duration(500)
+					.attr("x", function(d) {
+						return x(d.name);
+					})
+					.attr("width", x.rangeBand())
+					.attr("y", function(d) {
+						return yArray[d.name](d.values || 0);
+					})
+					.attr("height", function(d) {
+						return h - yArray[d.name](d.values || 0);
+					})
+					.attr("fill", function(d) {
+						if(d.quality > that.qualityThreshold)
+							return "url(#greenGradient)";
+						else
+							return "url(#redGradient)";
+					});
+				gBar.select('text')
+					.transition()
+					.duration(500)
+					.attr("transform", function(d) {
+						return "translate(" + (x(d.name)+x.rangeBand()/2) + "," + yArray[d.name](d.values || 0) + ")"; }) /* x and y are wrapper to compute coordinates in frame according to values */
+					.style("text-anchor","middle")
+					.text(function(d) { return (typeof d.values != 'undefined' ? d.values.toFixed(1)+" "+d.unit : ""); }); /* text */
+			};
+
+			that.updateAxis = function() {
+				svg.selectAll("g.x.axis")
+					.call(xAxis);
+			};
+
+			that.clean = function () {
+				svg.selectAll("*").remove();
+			}
+
+			return that;
+		};
+
+
+		Polymer({
+			ready: function(){
+				var that=this;
+				this.width =  this.width || 600;
+				this.height = this.height || 400;
+				this.period = this.period || 30000; // 30 sec
+				this.selector=this.selector || null;
+				this.sensors=this.sensors || null;
+
+				/* create/init d3 chart */
+				this.barchart = barChart(this.$.chart, this.width, this.height);
+
+				setTimeout(function() {that.autorefresh();}, this.period);
+			},
+			autorefresh: function() {
+				var that = this;
+				this.updateChart(null);
+				setTimeout(function() {that.autorefresh();}, this.period);
+			},
+			/**
+			*		Update chart
+			*/
+			updateChart: function (options){
+				var that=this;
+				/* request for data from ieq service */
+				var dataConfig = {
+					sampling: 1,
+					operator: "last",
+		      sensors: this.sensors
+				}
+		    console.log("Barchart : dataConfig: "+dataConfig);
+				if(this.selector)
+					d1(this.selector).IEQ().updateData(function(ieq) {
+						var model = ieq.getDataModel();
+						that.barchart.render(model);
+					}, dataConfig);
+				else
+					console.log("Selector undefined");
+			}
+
+		});
+
+
+
+	</script>
+
+</polymer-element>
