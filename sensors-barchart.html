@@ -258,8 +258,7 @@
 				}
 		    console.log("Barchart : dataConfig: "+dataConfig);
 				if(this.selector)
-					d1(this.selector).IEQ().updateData(function(ieq) {
-						var model = ieq.getDataModel();
+					d1(this.selector).IEQ().updateData(function(model) {
 						that.barchart.render(model);
 					}, dataConfig);
 				else
