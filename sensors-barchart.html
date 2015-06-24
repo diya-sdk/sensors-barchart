@@ -1,14 +1,13 @@
 <link rel="import" href="../polymer/polymer.html">
 <script type="text/javascript" src="../d3/d3.min.js"></script>
 
-<polymer-element name="sensors-barchart" attributes="width height selector period sensors place">
+<polymer-element name="sensors-barchart" attributes="selector period sensors place">
 	<template>
 		<style>
 			:host {
 				display: flex;
 				flex-direction: horizontal;
 				justify-content: center;
-				/*width: 100vw;*/
 			}
 			:host .barChart {
 						 stroke: #AAAAAA;
@@ -32,7 +31,7 @@
 		</style>
 
 		<span class="bar-chart">
-		 <svg id="chart" width="{{width}}" height="{{height}}"></svg>
+		 <svg id="chart"></svg>
 		</span>
 
 	</template>
@@ -173,7 +172,8 @@
 				//~ console.log("data :"+JSON.stringify(data));
 				var bars = svg.select('.allBars').selectAll('.barChart').data(data);
 
-				bars.exit().transition()
+				bars.exit()
+					.transition()
 					.duration(500)
 					.attr("height", 0)
 					.remove();
@@ -227,7 +227,7 @@
 
 
 		Polymer({
-			ready: function(){
+			ready: function() {
 				var that=this;
 				this.width =	this.width || 600;
 				this.height = this.height || 400;
@@ -243,6 +243,16 @@
 					setTimeout(function() {that.autorefresh();}, this.period);
 				}
 			},
+
+			// wait for everything else (we wait mostly for parentNode in this case)
+			domReady: function() {
+				// set width & height dynamically, based on width and height of container
+				// d3.select(this.parentNode).property("clientWidth"); // = 0 if hidden
+				var parentHeight = d3.select(this.parentNode).style("height");
+				var parentWidth = d3.select(this.parentNode).style("width");
+				d3.select(this.$.chart).style("width", parentWidth).style("height", parentHeight);
+			},
+
 			autorefresh: function() {
 				var that = this;
 				this.updateChart(null);
