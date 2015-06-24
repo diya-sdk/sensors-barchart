@@ -229,14 +229,9 @@
 		Polymer({
 			ready: function() {
 				var that=this;
-				this.width =	this.width || 600;
-				this.height = this.height || 400;
 				// this.period = this.period || 30000; // 30 sec
 				this.selector=this.selector || null;
 				this.sensors=this.sensors || null;
-
-				/* create/init d3 chart */
-				this.barchart = barChart(this.$.chart, this.width, this.height);
 
 				if (this.period != null) {
 					// not null & defined
@@ -251,6 +246,9 @@
 				var parentHeight = d3.select(this.parentNode).style("height");
 				var parentWidth = d3.select(this.parentNode).style("width");
 				d3.select(this.$.chart).style("width", parentWidth).style("height", parentHeight);
+
+				/* create/init d3 chart */
+				this.barchart = barChart(this.$.chart, parseInt(parentWidth), parseInt(parentHeight));
 			},
 
 			autorefresh: function() {
@@ -275,7 +273,7 @@
 				};
 				console.log("Barchart : dataConfig: ", dataConfig);
 				if(this.selector)
-					d1(this.selector).IEQ().updateData(function(model) {
+					d1(this.selector).IEQ().updateData(function(model) {console.log(model)
 						that.barchart.render(model);
 					}, dataConfig);
 				else
