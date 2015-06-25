@@ -29,9 +29,14 @@
 				font-size: 18px;
 				font-weight: bold;
 			}
+
+			#chart {
+				width: 100%;
+				height: 100%;
+			}
 		</style>
 
-		<svg id="chart"></svg>
+		<svg id="chart" viewBox="0 0 {{viewBoxWidth}} {{viewBoxHeight}}" preserveAspectRatio="xMinYMin meet"></svg>
 
 	</template>
 
@@ -229,51 +234,23 @@
 
 			place: -1,
 
+			viewBoxWidth: 1024,
+			viewBoxHeight: 768,
+
 			ready: function() {
 				var that=this;
 				this.selector=this.selector || null;
 				this.sensors=this.sensors || null;
 
-			},
-
-			// wait for everything else (we wait mostly for parentNode in this case)
-			domReady: function() {
-				var that = this;
-
-				// set width & height dynamically, based on width and height of this
-				var height = d3.select(this).style("height");
-				var width = d3.select(this).style("width");
-
-				d3.select(this.$.chart).style("width", width).style("height", height);
-
-				setTimeout(function() {that.autorefresh();}, null);
-
-			},
-
-			autorefresh: function() {
-				var that = this;
-
-				// barChart isnt initialized
-				if (this.barChart == null) {
-					// set width & height dynamically, based on width and height of this
-					var height = d3.select(this).style("height");
-					var width = d3.select(this).style("width");
-
-					// getComputedStyle = anything else = NG
-					if (/^\d+px$/.test(height) && /^\d+px$/.test(width)) {
-						// d3.select(this.$.chart).style("width", width).style("height", height);
-
-						/* create/init d3 chart */
-						this.barchart = barChart(this.$.chart, parseInt(width), parseInt(height));
-					} else {
-						setTimeout(function() {that.autorefresh();}, 1000);
-					}
-				} else if (this.period != null) {
-					this.updateChart(null);
-
-					setTimeout(function() {that.autorefresh();}, this.period);
+				// init svg barchart
+				this.barchart = barChart(this.$.chart, this.viewBoxWidth, this.viewBoxHeight);
+test=this
+				// autorefresh?
+				if (this.period != null) {
+					setInterval(function() { that.updateChart(null); }, this.period);
 				}
 			},
+
 			/**
 			*		Update chart
 			*/
@@ -306,7 +283,7 @@
 							}
 						}
 
-						if (that.barChart == null) {
+						if (that.barchart != null) {
 							that.barchart.render(model);
 						}
 					}, dataConfig);
@@ -316,9 +293,17 @@
 
 			// when placId is changed
 			placeChanged: function(oldVal, newVal) {
-				this.updateChart(null);
-			}
+				this.job('placeChanged', function() { console.log(oldVal, newVal)
+					if (newVal == oldVal) return;
 
+					this.updateChart(null);
+
+					// quick hack: reset place, so next request with same placeId also fire
+					// side-effect: this function will execute two times, so, the "if" statement at first line
+					if (typeof newVal === "string") this.place = parseInt(newVal);
+					else if (typeof newVal === "number") this.place = (newVal).toString();
+				}, 500);
+			}
 		});
 
 	</script>
