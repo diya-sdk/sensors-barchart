@@ -9,6 +9,10 @@
 				flex-direction: horizontal;
 				justify-content: center;
 			}
+
+			#content{
+			}
+
 			:host .barChart {
 						 stroke: #AAAAAA;
 						 stroke-width: 3px;
@@ -30,7 +34,9 @@
 			}
 		</style>
 
-		<svg id="chart"></svg>
+		<div id="content">
+			<!-- <svg id="chart"></svg> -->
+		</div>
 
 	</template>
 
@@ -225,6 +231,9 @@
 
 
 		Polymer({
+
+			place: -1,
+
 			ready: function() {
 				var that=this;
 				// this.period = this.period || 30000; // 30 sec
@@ -241,12 +250,12 @@
 			domReady: function() {
 				// set width & height dynamically, based on width and height of container
 				// d3.select(this.parentNode).property("clientWidth"); // = 0 if hidden
-				var parentHeight = d3.select(this.parentNode).style("height");
-				var parentWidth = d3.select(this.parentNode).style("width");
+			/*	var parentHeight = d3.select(this.$.chart.parentNode).style("height");
+				var parentWidth = d3.select(this.$.chart.parentNode).style("width");
 				d3.select(this.$.chart).style("width", parentWidth).style("height", parentHeight);
-
+*/
 				/* create/init d3 chart */
-				this.barchart = barChart(this.$.chart, parseInt(parentWidth), parseInt(parentHeight));
+				this.barchart = barChart(this.$.chart, 10, 10);
 			},
 
 			autorefresh: function() {
@@ -260,11 +269,13 @@
 			*/
 			updateChart: function (options) {
 				var that=this;
+
+
 				/* request for data from ieq service */
 				var dataConfig = {
 					sampling: 1,
 					operator: "last",
-					sensors: JSON.parse(this.sensors), // ['Temperature','Humidity','CO2','VOCt','Fine Dust','Ozone']
+					sensors: this.sensors.split(','), // ['Temperature','Humidity','CO2','VOCt','Fine Dust','Ozone']
 					criteria: {
 						place: [this.place]
 					}
