@@ -234,49 +234,81 @@
 				this.selector=this.selector || null;
 				this.sensors=this.sensors || null;
 
-				if (this.period != null) {
-					// not null & defined
-					setTimeout(function() {that.autorefresh();}, this.period);
-				}
 			},
 
 			// wait for everything else (we wait mostly for parentNode in this case)
 			domReady: function() {
+				var that = this;
+
 				// set width & height dynamically, based on width and height of this
 				var height = d3.select(this).style("height");
 				var width = d3.select(this).style("width");
+
 				d3.select(this.$.chart).style("width", width).style("height", height);
 
-				/* create/init d3 chart */
-				this.barchart = barChart(this.$.chart, parseInt(width), parseInt(height));
+				setTimeout(function() {that.autorefresh();}, null);
+
 			},
 
 			autorefresh: function() {
 				var that = this;
-				this.updateChart(null);
 
-				setTimeout(function() {that.autorefresh();}, this.period);
+				// barChart isnt initialized
+				if (this.barChart == null) {
+					// set width & height dynamically, based on width and height of this
+					var height = d3.select(this).style("height");
+					var width = d3.select(this).style("width");
+
+					// getComputedStyle = anything else = NG
+					if (/^\d+px$/.test(height) && /^\d+px$/.test(width)) {
+						// d3.select(this.$.chart).style("width", width).style("height", height);
+
+						/* create/init d3 chart */
+						this.barchart = barChart(this.$.chart, parseInt(width), parseInt(height));
+					} else {
+						setTimeout(function() {that.autorefresh();}, 1000);
+					}
+				} else if (this.period != null) {
+					this.updateChart(null);
+
+					setTimeout(function() {that.autorefresh();}, this.period);
+				}
 			},
 			/**
 			*		Update chart
 			*/
 			updateChart: function (options) {
 				var that=this;
+				var sensors = this.sensors.split(',');
 
 
 				/* request for data from ieq service */
 				var dataConfig = {
 					sampling: 1,
 					operator: "last",
-					sensors: this.sensors.split(','), // ['Temperature','Humidity','CO2','VOCt','Fine Dust','Ozone']
-					criteria: {
-						place: [this.place]
-					}
+					sensors: sensors, // ['Temperature','Humidity','CO2','VOCt','Fine Dust','Ozone']
+					criteria: {}
 				};
+
+				if (this.place != null) {
+					dataConfig.criteria.place = [this.place];
+				}
+
 				console.log("Barchart : dataConfig: ", dataConfig);
 				if(this.selector)
-					d1(this.selector).IEQ().updateData(function(model) {console.log(model)
-						that.barchart.render(model);
+					d1(this.selector).IEQ().updateData(function(model) {
+
+						// bug in Ieq.js, when multiple IEQ instances request db, this.sendModel will be corrupted, might contains more or less sensors data than requested
+						// so we do the filter in this code till this bug is fixed
+						for (var sensor in model) {
+							if (!~sensors.indexOf(sensor)) {
+								delete model[sensor];
+							}
+						}
+
+						if (that.barChart == null) {
+							that.barchart.render(model);
+						}
 					}, dataConfig);
 				else
 					console.log("Selector undefined");
