@@ -10,9 +10,6 @@
 				justify-content: center;
 			}
 
-			#content{
-			}
-
 			:host .barChart {
 						 stroke: #AAAAAA;
 						 stroke-width: 3px;
@@ -34,9 +31,7 @@
 			}
 		</style>
 
-		<div id="content">
-			<!-- <svg id="chart"></svg> -->
-		</div>
+		<svg id="chart"></svg>
 
 	</template>
 
@@ -236,7 +231,6 @@
 
 			ready: function() {
 				var that=this;
-				// this.period = this.period || 30000; // 30 sec
 				this.selector=this.selector || null;
 				this.sensors=this.sensors || null;
 
@@ -248,14 +242,13 @@
 
 			// wait for everything else (we wait mostly for parentNode in this case)
 			domReady: function() {
-				// set width & height dynamically, based on width and height of container
-				// d3.select(this.parentNode).property("clientWidth"); // = 0 if hidden
-			/*	var parentHeight = d3.select(this.$.chart.parentNode).style("height");
-				var parentWidth = d3.select(this.$.chart.parentNode).style("width");
-				d3.select(this.$.chart).style("width", parentWidth).style("height", parentHeight);
-*/
+				// set width & height dynamically, based on width and height of this
+				var height = d3.select(this).style("height");
+				var width = d3.select(this).style("width");
+				d3.select(this.$.chart).style("width", width).style("height", height);
+
 				/* create/init d3 chart */
-				this.barchart = barChart(this.$.chart, 10, 10);
+				this.barchart = barChart(this.$.chart, parseInt(width), parseInt(height));
 			},
 
 			autorefresh: function() {
