@@ -244,7 +244,7 @@
 
 				// init svg barchart
 				this.barchart = barChart(this.$.chart, this.viewBoxWidth, this.viewBoxHeight);
-test=this
+
 				// autorefresh?
 				if (this.period != null) {
 					setInterval(function() { that.updateChart(null); }, this.period);
@@ -293,16 +293,8 @@ test=this
 
 			// when placId is changed
 			placeChanged: function(oldVal, newVal) {
-				this.job('placeChanged', function() { console.log(oldVal, newVal)
-					if (newVal == oldVal) return;
-
-					this.updateChart(null);
-
-					// quick hack: reset place, so next request with same placeId also fire
-					// side-effect: this function will execute two times, so, the "if" statement at first line
-					if (typeof newVal === "string") this.place = parseInt(newVal);
-					else if (typeof newVal === "number") this.place = (newVal).toString();
-				}, 500);
+				// side effect of changed watcher: if place is set to same value, this method wont be called
+				this.updateChart(null);
 			}
 		});
 
