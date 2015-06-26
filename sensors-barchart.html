@@ -244,10 +244,16 @@
 
 				// init svg barchart
 				this.barchart = barChart(this.$.chart, this.viewBoxWidth, this.viewBoxHeight);
+			},
 
+			selectorChanged: function() {
 				// autorefresh?
 				if (this.period != null) {
-					setInterval(function() { that.updateChart(null); }, this.period);
+					var that=this;
+					if (this.interval) {
+						clearInterval(this.interval);
+					}
+					this.interval = setInterval(function() { that.updateChart(null); }, this.period);
 				}
 			},
 
