@@ -105,7 +105,6 @@
 				w = width - margin.left - margin.right,
 				x, y, yArray={};
 
-			that.qualityThreshold = qualityThreshold || 0.5;
 
 			var svg = d3.select(element)
 				.append('g')
@@ -137,9 +136,14 @@
 							name: model[n].label,
 							unit: model[n].unit,
 							quality: model[n].qualityIndex[model[n].data.length-1],
-							values: model[n].data[model[n].data.length-1]});
+							values: model[n].data[model[n].data.length-1],
+							qualityThreshold: model[n].qualityConfig.indexRange
+						});
+						
 					}
 				}
+				that.qualityThreshold = qualityThreshold || 0.5;
+				
 				//~ for(var o in options){
 					//~ updateChart[o]=options[o];
 				//~ }
@@ -203,7 +207,7 @@
 						return h - yArray[d.name](d.values || 0);
 					})
 					.attr("fill", function(d) {
-						if(d.quality > that.qualityThreshold)
+						if(d.quality >= d.qualityThreshold)
 							return "url(#greenGradient)";
 						else
 							return "url(#redGradient)";
@@ -281,13 +285,14 @@
 				if(this.selector)
 					d1(this.selector).IEQ().updateData(function(model) {
 
-						// bug in Ieq.js, when multiple IEQ instances request db, this.sendModel will be corrupted, might contains more or less sensors data than requested
+						// RESOLVED ! bug in Ieq.js, when multiple IEQ instances request db, this.sendModel will be corrupted, might contains more or less sensors data than requested
 						// so we do the filter in this code till this bug is fixed
-						for (var sensor in model) {
+						/* for (var sensor in model) {
 							if (!~sensors.indexOf(sensor)) {
 								delete model[sensor];
 							}
 						}
+						*/
 
 						if (that.barchart != null) {
 							that.barchart.render(model);
