@@ -93,6 +93,7 @@
 		* @param qualityThreshold	 define threshold on quality for color switching
 		*/
 		function barChart(element, width, height, qualityThreshold) {
+
 			var data = [];
 			var that = {};
 			var margin = {
@@ -124,7 +125,8 @@
 				.attr("class", "y axis");
 
 			that.render = function(model) {
-				// console.log("render: "+JSON.stringify(model));
+				//console.log("render: "+JSON.stringify(model));
+
 
 				if (!model	|| model == {} ) return;
 
@@ -185,14 +187,18 @@
 					.duration(500)
 					.attr("height", 0)
 					.remove();
+
 				var gBar = bars.enter().append("g")
 					.attr('class', 'barChart');
+
 				gBar.append('rect');
+
 				gBar.append('text')
 					.attr('class','text')
 					.attr("y", -20) /* offset position and dim of text area */
 					.attr("dy", ".35em");
 				gBar = svg.selectAll('.barChart');
+
 				gBar.select('rect')
 					.transition()
 					.duration(500)
@@ -212,6 +218,7 @@
 						else
 							return "url(#redGradient)";
 					});
+
 				gBar.select('text')
 					.transition()
 					.duration(500)
@@ -248,6 +255,7 @@
 
 				// init svg barchart
 				this.barchart = barChart(this.$.chart, this.viewBoxWidth, this.viewBoxHeight);
+
 			},
 
 			selectorChanged: function() {
@@ -281,7 +289,7 @@
 					dataConfig.criteria.place = [this.place];
 				}
 
-				console.log("Barchart : dataConfig: ", dataConfig);
+				//console.log("Barchart : dataConfig: ", dataConfig);
 				if(this.selector)
 					d1(this.selector).IEQ().updateData(function(model) {
 
@@ -298,8 +306,9 @@
 							that.barchart.render(model);
 						}
 					}, dataConfig);
-				else
-					console.log("Selector undefined");
+				else{
+					//console.log("Selector undefined");
+				}
 			},
 
 			// when placId is changed
