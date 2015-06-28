@@ -139,18 +139,12 @@
 							unit: model[n].unit,
 							quality: model[n].qualityIndex[model[n].data.length-1],
 							values: model[n].data[model[n].data.length-1],
-							qualityThreshold: model[n].qualityConfig.indexRange.length
+							qualityThreshold: model[n].qualityConfig.indexRange
 						});
 					}
 				}
-				console.log("data "+data);
-				//! that.qualityThreshold = qualityThreshold || 0.5;
+				//console.log(data);
 				
-				//~ for(var o in options){
-					//~ updateChart[o]=options[o];
-				//~ }
-				// console.log("UC: "+JSON.stringify(data));
-
 				x = d3.scale.ordinal().rangeRoundBands([0, w], .05);
 				x.domain(data.map(function(d) {
 					return d.name;
