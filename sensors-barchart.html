@@ -131,18 +131,18 @@
 				/** convert model to data */
 				var data = [];
 				for (var n in model) {
-					if(n!='time') {
+					if(n !=='time') {
 						data.push({
 							name: model[n].label,
 							unit: model[n].unit,
 							quality: model[n].qualityIndex[model[n].data.length-1],
 							values: model[n].data[model[n].data.length-1],
-							qualityThreshold: model[n].qualityConfig.indexRange
+							qualityThreshold: model[n].qualityConfig.indexRange.length
 						});
-						
 					}
 				}
-				that.qualityThreshold = qualityThreshold || 0.5;
+				console.log("data "+data);
+				//! that.qualityThreshold = qualityThreshold || 0.5;
 				
 				//~ for(var o in options){
 					//~ updateChart[o]=options[o];
@@ -175,7 +175,7 @@
 				this.updateAxis();
 			};
 
-			/** update Bars */
+			/** update Bars */ 
 			that.updateBars = function(data) {
 				//~ console.log("data :"+JSON.stringify(data));
 				var bars = svg.select('.allBars').selectAll('.barChart').data(data);
