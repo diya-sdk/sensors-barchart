@@ -133,7 +133,7 @@
 				/** convert model to data */
 				var data = [];
 				for (var n in model) {
-					if(n!='time') {
+					if(n !=='time') {
 						data.push({
 							name: model[n].label,
 							unit: model[n].unit,
@@ -141,17 +141,10 @@
 							values: model[n].data[model[n].data.length-1],
 							qualityThreshold: model[n].qualityConfig.indexRange
 						});
-
-
 					}
 				}
-				that.qualityThreshold = qualityThreshold || 0.5;
-
-				//~ for(var o in options){
-					//~ updateChart[o]=options[o];
-				//~ }
-				// console.log("UC: "+JSON.stringify(data));
-
+				//console.log(data);
+				
 				x = d3.scale.ordinal().rangeRoundBands([0, w], .05);
 				x.domain(data.map(function(d) {
 					return d.name;
@@ -178,7 +171,7 @@
 				this.updateAxis();
 			};
 
-			/** update Bars */
+			/** update Bars */ 
 			that.updateBars = function(data) {
 				//~ console.log("data :"+JSON.stringify(data));
 				var bars = svg.select('.allBars').selectAll('.barChart').data(data);
