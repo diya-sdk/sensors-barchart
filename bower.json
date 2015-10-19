@@ -17,6 +17,6 @@
   ],
   "dependencies": {
     "d3": "~3.5.5",
-    "diya-sdk": "partnering/diya-sdk"
+    "diya-sdk": "partnering/diya-sdk#master"
   }
 }
