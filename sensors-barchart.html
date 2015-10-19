@@ -53,8 +53,6 @@
 		// Define the gradient colors
 		redGradient.append('svg:stop').attr('offset', '0%').attr('stop-color', '#ff7f2a').attr('stop-opacity', 1);
 		redGradient.append('svg:stop').attr('offset', '100%').attr('stop-color', '#bb5b18').attr('stop-opacity', 1);
-		/** PATCH **/
-		var redGradient = greenGradient;
 	}
   /**
    * @param
@@ -62,7 +60,7 @@
    * @param height		 of chart
    * @param qualityThreshold	 define threshold on quality for color switching
    */
-  function barChart(element, width, height, qualityThreshold) {
+  function barChart(element, width, height) {
 	  var data = [];
 	  var that = {};
 	  var margin = {
@@ -91,8 +89,7 @@
 					  name: model[n].label,
 					  unit: model[n].unit,
 					  quality: model[n].qualityIndex[model[n].data.length - 1],
-					  values: model[n].data[model[n].data.length - 1],
-					  qualityThreshold: model[n].qualityConfig.indexRange
+					  values: model[n].data[model[n].data.length - 1]
 				  });
 			  }
 		  }
@@ -144,7 +141,7 @@
 		  }).attr('height', function (d) {
 			  return h - yArray[d.name](d.values || 0);
 		  }).attr('fill', function (d) {
-			  if (d.quality >= d.qualityThreshold)
+			  if (d.quality >= 1)
 				  return 'url(#greenGradient)';
 			  else
 				  return 'url(#redGradient)';
