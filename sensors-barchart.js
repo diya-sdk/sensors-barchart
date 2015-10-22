@@ -86,7 +86,7 @@ function barChart(element, width, height) {
 	};
 	/** update Bars */
 	that.updateBars = function (data) {
-		console.log("data :"+JSON.stringify(data));
+		// console.log("data :"+JSON.stringify(data));
 		var bars = svg.select('.allBars').selectAll('.barChart').data(data);
 		bars.exit().transition().duration(500).attr('height', 0).remove();
 		var gBar = bars.enter().append('g').attr('class', 'barChart');
@@ -105,11 +105,11 @@ function barChart(element, width, height) {
 			else
 				return 'url(#redGradient)';
 		});
-		gBar.select('text').transition().duration(500).attr('transform', function (d) {
-			return 'translate(' + (x(d.name) + x.rangeBand() / 2) + ',' + yArray[d.name](d.values || 0) + ')';
-		}).style('text-anchor', 'middle').text(function (d) {
-			return typeof d.values != 'undefined' ? d.values.toFixed(1) + ' ' + d.unit : '';
-		});
+		// gBar.select('text').transition().duration(500).attr('transform', function (d) {
+		// 	return 'translate(' + (x(d.name) + x.rangeBand() / 2) + ',' + yArray[d.name](d.values || 0) + ')';
+		// }).style('text-anchor', 'middle').text(function (d) {
+		// 	return typeof d.values != 'undefined' ? d.values.toFixed(1) + ' ' + d.unit : '';
+		// });
 	};
 	/* text */
 	that.updateAxis = function () {
