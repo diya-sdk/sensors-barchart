@@ -20,7 +20,7 @@ function barChart(element, width, height) {
 	var margin = {
 		top: 20,
 		right: 0,
-		bottom: 40,
+		bottom: 50,
 		left: 0
 	};
 	
