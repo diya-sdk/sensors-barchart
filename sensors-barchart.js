@@ -23,7 +23,7 @@ function barChart(element, width, height) {
 		bottom: 50,
 		left: 0
 	};
-	
+
 	var h = height - margin.top - margin.bottom, w = width - margin.left - margin.right, x, y, yArray = {};
 
 	/** clear chart **/
@@ -155,19 +155,19 @@ Polymer({
 				0,
 				0
 			];
-			
+
 			// image's real origin in image tag of svg
 			// svg's client (viewport)
 			console.log("dim : "+that.$.barchart.offsetHeight+" "+that.$.barchart.offsetWidth);
 			that.viewBoxWidth = that.$.barchart.offsetWidth;
 			that.viewBoxHeight = that.$.barchart.offsetHeight;
-			
+
 			// fit viewBow to svg
 			d3.select(that.$.barchart).attr('viewBox', '0 0 ' + that.viewBoxWidth + ' ' + that.viewBoxHeight).attr('preserveAspectRatio', 'xMinYMin meet');
 
 			/* re-create/init d3 chart */
 			that.barchart = barChart(that.$.barchart, that.viewBoxWidth, that.viewBoxHeight);
-			
+
 		},1);
 	},
 	ready: function () {
@@ -198,9 +198,15 @@ Polymer({
 			return;
 		var sensors = this.sensors.split(',');
 		/* request for data from ieq service */
+		/* averaged on last 15 seconds */
 		var dataConfig = {
 			sampling: 1,
-			operator: 'last',
+			operator: 'avg',
+			criteria: {
+				time: {
+					range: this.period
+				}
+			},
 			sensors: sensors,
 			// ['Temperature','Humidity','CO2','VOCt','Fine Dust','Ozone']
 			criteria: {}
