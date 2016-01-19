@@ -207,9 +207,8 @@ Polymer({
 					range: this.period
 				}
 			},
-			sensors: sensors,
+			sensors: sensors
 			// ['Temperature','Humidity','CO2','VOCt','Fine Dust','Ozone']
-			criteria: {}
 		};
 		if (this.place != null) {
 			dataConfig.criteria.place = [this.place];
