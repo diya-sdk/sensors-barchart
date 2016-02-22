@@ -158,7 +158,7 @@ Polymer({
 
 			// image's real origin in image tag of svg
 			// svg's client (viewport)
-			console.log("dim : "+that.$.barchart.offsetHeight+" "+that.$.barchart.offsetWidth);
+			// console.log("dim : "+that.$.barchart.offsetHeight+" "+that.$.barchart.offsetWidth);
 			that.viewBoxWidth = that.$.barchart.offsetWidth;
 			that.viewBoxHeight = that.$.barchart.offsetHeight;
 
@@ -204,7 +204,7 @@ Polymer({
 			operator: 'avg',
 			criteria: {
 				time: {
-					range: this.period
+					range: Math.round(this.period/1000)
 				}
 			},
 			sensors: sensors
