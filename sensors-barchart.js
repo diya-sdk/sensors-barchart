@@ -7,6 +7,10 @@ function setBarGradient(svg) {
 	// Define the gradient colors
 	redGradient.append('svg:stop').attr('offset', '0%').attr('stop-color', '#ff7f2a').attr('stop-opacity', 1);
 	redGradient.append('svg:stop').attr('offset', '100%').attr('stop-color', '#bb5b18').attr('stop-opacity', 1);
+	// Define the gradient colors
+	var yellowGradient = svg.append('svg:defs').append('svg:linearGradient').attr('id', 'yellowGradient').attr('x1', '0%').attr('y1', '0%').attr('x2', '100%').attr('y2', '0%').attr('spreadMethod', 'pad');
+	yellowGradient.append('svg:stop').attr('offset', '0%').attr('stop-color', '#D1E231').attr('stop-opacity', 1);
+	yellowGradient.append('svg:stop').attr('offset', '0%').attr('stop-color', '#8DB600').attr('stop-opacity', 1);
 }
 /**
  * @param
@@ -67,7 +71,7 @@ function barChart(element, width, height) {
 		y.domain([
 			0,
 			d3.max(data, function (d) {
-				return d.values || 1;
+				return ( typeof d.values ==='number'? (d.values>0? d.values:0) : 0 );
 			})
 		]);
 		/** extract scale for each data */
@@ -100,10 +104,10 @@ function barChart(element, width, height) {
 		}).attr('height', function (d) {
 			return h - yArray[d.name](d.values || 0);
 		}).attr('fill', function (d) {
-			if (d.quality >= 1)
+			if (d.quality >= 0.5)
 				return 'url(#greenGradient)';
 			else
-				return 'url(#redGradient)';
+				return 'url(#yellowGradient)';
 		});
 		// gBar.select('text').transition().duration(500).attr('transform', function (d) {
 		// 	return 'translate(' + (x(d.name) + x.rangeBand() / 2) + ',' + yArray[d.name](d.values || 0) + ')';
