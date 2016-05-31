@@ -100,9 +100,9 @@ function barChart(element, width, height) {
 		gBar.select('rect').transition().duration(500).attr('x', function (d) {
 			return x(d.name);
 		}).attr('width', x.rangeBand()).attr('y', function (d) {
-			return yArray[d.name](d.values || 0);
+			return yArray[d.name](d.values>0? d.values:0);
 		}).attr('height', function (d) {
-			return h - yArray[d.name](d.values || 0);
+			return h - yArray[d.name](d.values>0? d.values:0);
 		}).attr('fill', function (d) {
 			if (d.quality >= 0.5)
 				return 'url(#greenGradient)';
@@ -153,23 +153,17 @@ Polymer({
 			// access sibling or parent elements here
 			var that = this;
 
-			// svg's viewBox
-			var viewBoxHeight = 0, viewBoxWidth = 0;
-			var org = [
-				0,
-				0
-			];
-
-			// image's real origin in image tag of svg
+			// init svg barchart
+			// svg's viewBox - image's real origin in image tag of svg
 			// svg's client (viewport)
-			// console.log("dim : "+that.$.barchart.offsetHeight+" "+that.$.barchart.offsetWidth);
-			that.viewBoxWidth = that.$.barchart.offsetWidth;
-			that.viewBoxHeight = that.$.barchart.offsetHeight;
+			that.viewBoxWidth = that.$.barchart.offsetWidth || that.$.barchart.clientWidth || that.viewBoxWidth;
+			that.viewBoxHeight = that.$.barchart.offsetHeight || that.$.barchart.clientHeight || that.viewBoxHeight;
+			console.log("Viewbox: "+that.viewBoxWidth+"/"+that.viewBoxHeight);
 
-			// fit viewBow to svg
+			// fit viewBox to svg
 			d3.select(that.$.barchart).attr('viewBox', '0 0 ' + that.viewBoxWidth + ' ' + that.viewBoxHeight).attr('preserveAspectRatio', 'xMinYMin meet');
 
-			/* re-create/init d3 chart */
+			/* create/init d3 chart */
 			that.barchart = barChart(that.$.barchart, that.viewBoxWidth, that.viewBoxHeight);
 
 		},1);
@@ -177,8 +171,6 @@ Polymer({
 	ready: function () {
 		var that = this;
 		this.sensors = this.sensors || null;
-		// init svg barchart
-		this.barchart = barChart(this.$.barchart, this.viewBoxWidth, this.viewBoxHeight);
 		this.selector = this.selector || null;
 	},
 	selectorChanged: function () {
