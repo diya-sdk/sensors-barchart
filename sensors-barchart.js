@@ -51,8 +51,8 @@ function barChart(element, width, height) {
 				data.push({
 					name: model[n].label,
 					unit: model[n].unit,
-					quality: model[n].qualityIndex[model[n].data.length - 1],
-					values: model[n].data[model[n].data.length - 1]
+					quality: model[n].avg.i[0],
+					values: model[n].avg.d[0]
 				});
 			}
 		}
@@ -109,11 +109,6 @@ function barChart(element, width, height) {
 			else
 				return 'url(#yellowGradient)';
 		});
-		// gBar.select('text').transition().duration(500).attr('transform', function (d) {
-		// 	return 'translate(' + (x(d.name) + x.rangeBand() / 2) + ',' + yArray[d.name](d.values || 0) + ')';
-		// }).style('text-anchor', 'middle').text(function (d) {
-		// 	return typeof d.values != 'undefined' ? d.values.toFixed(1) + ' ' + d.unit : '';
-		// });
 	};
 	/* text */
 	that.updateAxis = function () {
@@ -129,15 +124,7 @@ Polymer({
 	is: 'sensors-barchart',
 	properties: {
 		period: { notify: true },
-		place: {
-			value: null,
-			notify: true,
-			observer: 'placeChanged'
-		},
-		selector: {
-			notify: true,
-			observer: 'selectorChanged'
-		},
+		// TODO : manage filter by places
 		sensors: { notify: true },
 		viewBoxHeight: {
 			type: Number,
@@ -146,6 +133,10 @@ Polymer({
 		viewBoxWidth: {
 			type: Number,
 			value: 640
+		},
+		databind: { // bind on common data for sensors
+			notify: true,
+			observer : 'onDataChanged'
 		}
 	},
 	attached: function() {
@@ -173,65 +164,26 @@ Polymer({
 		this.sensors = this.sensors || null;
 		this.selector = this.selector || null;
 	},
-	selectorChanged: function () {
-		// autorefresh?
-		if (this.period != null) {
-			var that = this;
-			if (this.interval) {
-				clearInterval(this.interval);
-			}
-			this.interval = setInterval(function () {
-				that.updateChart(null);
-			}, this.period);
-		}
-	},
-	/**
-	 *		Update chart
-	 */
-	updateChart: function (options) {
+	onDataChanged: function() {
 		var that = this;
 		if(!this.sensors)
 			return;
 		var sensors = this.sensors.split(',');
-		/* request for data from ieq service */
-		/* averaged on last 15 seconds */
-		var dataConfig = {
-			sampling: 1,
-			operator: 'avg',
-			criteria: {
-				time: {
-					range: Math.round(this.period/1000)
-				}
-			},
-			sensors: sensors
-			// ['Temperature','Humidity','CO2','VOCt','Fine Dust','Ozone']
-		};
-		if (this.place != null) {
-			dataConfig.criteria.place = [this.place];
+
+		if(!this.databind)
+			return;
+
+		var model = {};
+		// build model from selected sensors
+		sensors.forEach(function(name) {
+			if(name)
+				if(that.databind[name] && that.databind[name].avg)
+					model[name] = that.databind[name];
+		});
+
+		if (that.barchart != null) {
+			that.barchart.render(model);
 		}
-		//console.log("Barchart : dataConfig: ", dataConfig);
-		if (this.selector)
-			d1(this.selector).IEQ().updateData(function (model) {
-				// RESOLVED ! bug in Ieq.js, when multiple IEQ instances request db, this.sendModel will be corrupted, might contains more or less sensors data than requested
-				// so we do the filter in this code till this bug is fixed
-				/* for (var sensor in model) {
-				 if (!~sensors.indexOf(sensor)) {
-				 delete model[sensor];
-				 }
-				 }
-				 */
-				if (that.barchart != null) {
-					that.barchart.render(model);
-				}
-			}, dataConfig);
-		else {
-		}
-	},
-	//console.log("Selector undefined");
-	// when placId is changed
-	placeChanged: function (newVal, oldVal) {
-		// side effect of changed watcher: if place is set to same value, this method wont be called
-		this.updateChart(null);
 	},
 	_computeViewBox: function (viewBoxHeight, viewBoxWidth) {
 		return '0 0 ' + viewBoxWidth + ' ' + viewBoxHeight;
