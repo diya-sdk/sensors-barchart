@@ -18,7 +18,7 @@ function setBarGradient(svg) {
  * @param height		 of chart
  * @param qualityThreshold	 define threshold on quality for color switching
  */
-function barChart(element, width, height) {
+function barChart(element, width, height,fontSize) {
 	var data = [];
 	var that = {};
 	var margin = {
@@ -27,6 +27,7 @@ function barChart(element, width, height) {
 		bottom: 50,
 		left: 0
 	};
+	that.fontSize = fontSize;
 
 	var h = height - margin.top - margin.bottom, w = width - margin.left - margin.right, x, y, yArray = {};
 
@@ -112,7 +113,10 @@ function barChart(element, width, height) {
 	};
 	/* text */
 	that.updateAxis = function () {
-		svg.selectAll('g.x.axis').call(xAxis);
+		svg.selectAll('g.x.axis').call(xAxis)
+			.selectAll("text")
+			.attr("transform"," translate(0,5)") // To rotate the texts on x axis. Translate y position a little bit to prevent overlapping on axis line.
+			.style("font-size",that.fontSize); //To change the font size of texts;
 	};
 	that.clean = function () {
 		svg.selectAll('*').remove();
@@ -134,28 +138,32 @@ Polymer({
 			type: Number,
 			value: 640
 		},
+		fontSize: {
+			type: String,
+			value: "0.5em"
+		},
 		databind: { // bind on common data for sensors
 			notify: true,
 			observer : 'onDataChanged'
 		}
 	},
 	attached: function() {
+		// access sibling or parent elements here
+		var that = this;
 		this.async(function() {
-			// access sibling or parent elements here
-			var that = this;
 
 			// init svg barchart
 			// svg's viewBox - image's real origin in image tag of svg
 			// svg's client (viewport)
-			that.viewBoxWidth = that.$.barchart.offsetWidth || that.$.barchart.clientWidth || that.viewBoxWidth;
-			that.viewBoxHeight = that.$.barchart.offsetHeight || that.$.barchart.clientHeight || that.viewBoxHeight;
-			console.log("Viewbox: "+that.viewBoxWidth+"/"+that.viewBoxHeight);
+			that.viewBoxWidth = that.viewBoxWidth || that.$.barchart.offsetWidth || that.$.barchart.clientWidth;
+			that.viewBoxHeight = that.viewBoxHeight || that.$.barchart.offsetHeight || that.$.barchart.clientHeight;
+			// console.log("Viewbox: "+that.viewBoxWidth+"/"+that.viewBoxHeight);
 
 			// fit viewBox to svg
 			d3.select(that.$.barchart).attr('viewBox', '0 0 ' + that.viewBoxWidth + ' ' + that.viewBoxHeight).attr('preserveAspectRatio', 'xMinYMin meet');
 
 			/* create/init d3 chart */
-			that.barchart = barChart(that.$.barchart, that.viewBoxWidth, that.viewBoxHeight);
+			that.barchart = barChart(that.$.barchart, that.viewBoxWidth, that.viewBoxHeight,this.fontSize);
 
 		},1);
 	},
@@ -163,24 +171,30 @@ Polymer({
 		var that = this;
 		this.sensors = this.sensors || null;
 		this.selector = this.selector || null;
+		// this.fontSize = this.fontSize || null;
 	},
 	onDataChanged: function() {
 		var that = this;
-		if(!this.sensors)
-			return;
-		var sensors = this.sensors.split(',');
-
 		if(!this.databind)
 			return;
-
 		var model = {};
-		// build model from selected sensors
-		sensors.forEach(function(name) {
-			if(name)
-				if(that.databind[name] && that.databind[name].avg)
-					model[name] = that.databind[name];
-		});
+		if(this.sensors) {
+			var sensors = this.sensors.split(',');
 
+			// build model from selected sensors
+			sensors.forEach(function(name) {
+				if(name)
+					if(that.databind[name] && that.databind[name].avg)
+						model[name] = that.databind[name];
+			});
+		}
+		else {
+			//			for(var n in that.databind) {
+			that.databind.forEach(function(el,n) {
+				if(that.databind[n] && that.databind[n].avg)
+					model[n] = that.databind[n];
+			});
+		}
 		if (that.barchart != null) {
 			that.barchart.render(model);
 		}
